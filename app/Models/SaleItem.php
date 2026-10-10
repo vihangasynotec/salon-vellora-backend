@@ -32,4 +32,9 @@ class SaleItem extends Model
     {
         return $this->belongsTo(Staff::class);
     }
+
+    public function sale()
+    {
+        return $this->belongsTo(Sale::class);
+    }
 }

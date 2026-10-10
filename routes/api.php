@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SaleController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\SalaryController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,9 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::post('/auth/login', [AuthController::class, 'login']);
+Route::get('/auth/login', function () {
+    return response()->json(['message' => 'Unauthenticated.'], 401);
+})->name('login');
 Route::get('/catalog', [CatalogController::class, 'getCatalog']);
 
 /*
@@ -97,12 +101,24 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Staff
     Route::prefix('staff')->group(function () {
-        Route::get('/', [StaffController::class, 'index'])->middleware('permission:staff.view');
+        Route::get('/', [StaffController::class, 'index']);
         Route::post('/', [StaffController::class, 'store'])->middleware('permission:staff.create');
         Route::get('/{id}', [StaffController::class, 'show'])->middleware('permission:staff.view');
         Route::put('/{id}', [StaffController::class, 'update'])->middleware('permission:staff.edit');
         Route::get('/{id}/performance', [StaffController::class, 'performance'])->middleware('permission:staff.view');
         Route::delete('/{id}', [StaffController::class, 'destroy'])->middleware('permission:staff.edit');
+    });
+
+    // Staff Salaries & Payroll
+    Route::prefix('salaries')->group(function () {
+        Route::get('/', [SalaryController::class, 'index'])->middleware('permission:staff.view');
+        Route::post('/calculate-preview', [SalaryController::class, 'previewCalculate'])->middleware('permission:staff.view');
+        Route::post('/', [SalaryController::class, 'store'])->middleware('permission:staff.create');
+        Route::get('/{id}', [SalaryController::class, 'show'])->middleware('permission:staff.view');
+        Route::put('/{id}', [SalaryController::class, 'update'])->middleware('permission:staff.edit');
+        Route::post('/{id}/pay', [SalaryController::class, 'markAsPaid'])->middleware('permission:staff.edit');
+        Route::delete('/{id}', [SalaryController::class, 'destroy'])->middleware('permission:staff.edit');
+        Route::get('/{id}/payslip', [SalaryController::class, 'getPayslip'])->middleware('permission:staff.view');
     });
 
     // Inventory & Products

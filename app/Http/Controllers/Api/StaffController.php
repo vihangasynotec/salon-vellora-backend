@@ -119,13 +119,14 @@ class StaffController extends Controller
     public function destroy($id): JsonResponse
     {
         $staff = Staff::findOrFail($id);
+        $name = $staff->name;
         $staff->delete();
 
-        AuditLogService::log('delete', 'staff', $id, null, null);
+        AuditLogService::log('delete', 'staff', $id, null, ['name' => $name]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Staff member archived.',
+            'message' => "Staff member '{$name}' deleted successfully.",
         ]);
     }
 }
