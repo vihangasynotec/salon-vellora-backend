@@ -8,6 +8,7 @@ use App\Models\ExpenseCategory;
 use App\Models\Permission;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\RentalItem;
 use App\Models\Role;
 use App\Models\Service;
 use App\Models\ServiceCategory;
@@ -399,6 +400,126 @@ class DatabaseSeeder extends Seeder
 
         foreach ($settings as $s) {
             Setting::updateOrCreate(['key' => $s['key']], $s);
+        }
+
+        // 11. Luxury Bridal & Item Rentals (24h Standard Rent)
+        $rentalItems = [
+            [
+                'name' => 'Kanchipuram Silk Bridal Saree (Royal Maroon & Gold Zari)',
+                'code' => 'RNT-SAR-001',
+                'category' => 'Sarees & Lehengas',
+                'description' => 'Pure handwoven Kanchipuram silk saree with rich antique gold zari border. Includes matching pre-stitched bridal blouse (Size 34-38).',
+                'rental_price_per_24h' => 7500.00,
+                'security_deposit' => 10000.00,
+                'late_fee_per_day' => 1500.00,
+                'total_quantity' => 2,
+                'available_quantity' => 2,
+                'condition' => 'Pristine',
+                'image' => 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=80&auto=format&fit=crop',
+                'status' => 'available',
+            ],
+            [
+                'name' => 'Traditional Kandyan Mul Anduma Saree Set (Ivory & Gold)',
+                'code' => 'RNT-SAR-002',
+                'category' => 'Sarees & Lehengas',
+                'description' => 'Authentic Sri Lankan Kandyan bridal saree with exquisite hand embroidery, pearl beading, and custom frill work.',
+                'rental_price_per_24h' => 8500.00,
+                'security_deposit' => 12000.00,
+                'late_fee_per_day' => 2000.00,
+                'total_quantity' => 1,
+                'available_quantity' => 1,
+                'condition' => 'Pristine',
+                'image' => 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80&auto=format&fit=crop',
+                'status' => 'available',
+            ],
+            [
+                'name' => '24K Gold Plated Heritage Bridal Jewellery Set (7 Pcs)',
+                'code' => 'RNT-JWL-001',
+                'category' => 'Jewellery Sets',
+                'description' => 'Grand bridal set: Choker necklace, long mala, matching jhumka earrings, maang tikka, haath phool, and nath.',
+                'rental_price_per_24h' => 4500.00,
+                'security_deposit' => 6000.00,
+                'late_fee_per_day' => 1000.00,
+                'total_quantity' => 3,
+                'available_quantity' => 3,
+                'condition' => 'Excellent',
+                'image' => 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&q=80&auto=format&fit=crop',
+                'status' => 'available',
+            ],
+            [
+                'name' => 'Royal Emerald Velvet Bridal Lehenga Set',
+                'code' => 'RNT-LHG-001',
+                'category' => 'Sarees & Lehengas',
+                'description' => 'Deep emerald green heavy velvet lehenga with zardozi and sequin embroidery, double net dupatta.',
+                'rental_price_per_24h' => 9500.00,
+                'security_deposit' => 15000.00,
+                'late_fee_per_day' => 2000.00,
+                'total_quantity' => 1,
+                'available_quantity' => 1,
+                'condition' => 'Pristine',
+                'image' => 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80&auto=format&fit=crop',
+                'status' => 'available',
+            ],
+            [
+                'name' => 'Handcrafted Crystal Princess Bridal Tiara / Crown',
+                'code' => 'RNT-ACC-001',
+                'category' => 'Hair & Veils',
+                'description' => 'Swarovski-element crystal bridal crown with silver finish. Lightweight and secure for wedding day wear.',
+                'rental_price_per_24h' => 2500.00,
+                'security_deposit' => 4000.00,
+                'late_fee_per_day' => 500.00,
+                'total_quantity' => 4,
+                'available_quantity' => 4,
+                'condition' => 'Excellent',
+                'image' => 'https://images.unsplash.com/photo-1535295972055-1c762f4483e5?w=800&q=80&auto=format&fit=crop',
+                'status' => 'available',
+            ],
+            [
+                'name' => 'Cathedral Bridal Lace Veil (3.5 Meters)',
+                'code' => 'RNT-ACC-002',
+                'category' => 'Hair & Veils',
+                'description' => 'Dramatic European illusion soft tulle veil with French scalloped chantilly lace border.',
+                'rental_price_per_24h' => 3000.00,
+                'security_deposit' => 5000.00,
+                'late_fee_per_day' => 750.00,
+                'total_quantity' => 2,
+                'available_quantity' => 2,
+                'condition' => 'Pristine',
+                'image' => 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80&auto=format&fit=crop',
+                'status' => 'available',
+            ],
+            [
+                'name' => 'Luxury Kundan & Pearl Choker Necklace with Jhumkas',
+                'code' => 'RNT-JWL-002',
+                'category' => 'Jewellery Sets',
+                'description' => 'Intricate Meenakari reverse with uncut glass Kundan stones and natural freshwater seed pearls.',
+                'rental_price_per_24h' => 3500.00,
+                'security_deposit' => 5000.00,
+                'late_fee_per_day' => 800.00,
+                'total_quantity' => 2,
+                'available_quantity' => 2,
+                'condition' => 'Excellent',
+                'image' => 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80&auto=format&fit=crop',
+                'status' => 'available',
+            ],
+            [
+                'name' => 'Bridal Velvet Clutch & Crystal Brooch Set',
+                'code' => 'RNT-ACC-003',
+                'category' => 'Bridal Accessories',
+                'description' => 'Custom embroidered rose gold clutch bag with removable crystal chain and matching hair brooch.',
+                'rental_price_per_24h' => 1800.00,
+                'security_deposit' => 3000.00,
+                'late_fee_per_day' => 400.00,
+                'total_quantity' => 3,
+                'available_quantity' => 3,
+                'condition' => 'Good',
+                'image' => 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&q=80&auto=format&fit=crop',
+                'status' => 'available',
+            ],
+        ];
+
+        foreach ($rentalItems as $ri) {
+            RentalItem::updateOrCreate(['code' => $ri['code']], $ri);
         }
     }
 }

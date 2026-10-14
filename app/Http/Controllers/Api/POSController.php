@@ -7,6 +7,8 @@ use App\Models\Customer;
 use App\Models\InventoryMovement;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\RentalItem;
+use App\Models\RentalOrder;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Service;
@@ -34,6 +36,10 @@ class POSController extends Controller
             ->orderBy('name')
             ->get();
 
+        $rentals = RentalItem::where('status', '!=', 'inactive')
+            ->orderBy('name')
+            ->get();
+
         $customers = Customer::where('status', 'active')->orderBy('name')->get();
 
         return response()->json([
@@ -42,6 +48,7 @@ class POSController extends Controller
                 'categories' => $categories,
                 'packages' => $packages,
                 'products' => $products,
+                'rentals' => $rentals,
                 'customers' => $customers,
             ]
         ]);
@@ -56,13 +63,16 @@ class POSController extends Controller
             'staff_id' => 'nullable|exists:staff,id',
             'quotation_id' => 'nullable|exists:quotations,id',
             'items' => 'required|array|min:1',
-            'items.*.item_type' => 'required|in:service,product,package',
+            'items.*.item_type' => 'required|in:service,product,package,rental',
             'items.*.item_id' => 'required|integer',
             'items.*.name' => 'required|string',
             'items.*.staff_id' => 'nullable|exists:staff,id',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.discount_amount' => 'nullable|numeric|min:0',
+            'items.*.deposit_amount' => 'nullable|numeric|min:0',
+            'items.*.duration_hours' => 'nullable|integer|min:1',
+            'items.*.customer_nic' => 'nullable|string',
             'discount_type' => 'nullable|in:fixed,percentage',
             'discount_value' => 'nullable|numeric|min:0',
             'discount_amount' => 'nullable|numeric|min:0',
@@ -96,7 +106,7 @@ class POSController extends Controller
             }
         }
 
-        // 2. Validate Product Stock Availability
+        // 2. Validate Product & Rental Stock Availability
         foreach ($validated['items'] as $item) {
             if ($item['item_type'] === 'product') {
                 $product = Product::find($item['item_id']);
@@ -107,6 +117,17 @@ class POSController extends Controller
                     return response()->json([
                         'success' => false,
                         'message' => "Insufficient stock for '{$product->name}'. Available: {$product->stock_quantity}, Requested: {$item['quantity']}."
+                    ], 422);
+                }
+            } else if ($item['item_type'] === 'rental') {
+                $rental = RentalItem::find($item['item_id']);
+                if (!$rental) {
+                    return response()->json(['success' => false, 'message' => "Rental item not found."], 422);
+                }
+                if ($rental->available_quantity < $item['quantity']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Insufficient rental availability for '{$rental->name}'. Available: {$rental->available_quantity}, Requested: {$item['quantity']}."
                     ], 422);
                 }
             }
@@ -177,22 +198,72 @@ class POSController extends Controller
                     'total_price' => $itemLineTotal,
                 ]);
 
-                // Inventory reduction
+                // Inventory reduction for products
                 if ($item['item_type'] === 'product') {
                     $prod = Product::lockForUpdate()->find($item['item_id']);
-                    $prod->stock_quantity -= $item['quantity'];
-                    $prod->save();
+                    if ($prod) {
+                        $prod->stock_quantity -= $item['quantity'];
+                        $prod->save();
 
-                    InventoryMovement::create([
-                        'product_id' => $prod->id,
-                        'movement_type' => 'pos_sale',
-                        'quantity' => -$item['quantity'],
-                        'balance_after' => $prod->stock_quantity,
-                        'reference_type' => 'Sale',
-                        'reference_id' => $sale->id,
-                        'notes' => "POS Invoice #{$invoiceNumber}",
-                        'created_by' => $user->id,
-                    ]);
+                        InventoryMovement::create([
+                            'product_id' => $prod->id,
+                            'movement_type' => 'pos_sale',
+                            'quantity' => -$item['quantity'],
+                            'balance_after' => $prod->stock_quantity,
+                            'reference_type' => 'Sale',
+                            'reference_id' => $sale->id,
+                            'notes' => "POS Invoice #{$invoiceNumber}",
+                            'created_by' => $user->id,
+                        ]);
+                    }
+                }
+
+                // Rental order creation and availability reduction
+                if ($item['item_type'] === 'rental') {
+                    $rItem = RentalItem::lockForUpdate()->find($item['item_id']);
+                    if ($rItem) {
+                        $durationHours = (int) ($item['duration_hours'] ?? 24);
+                        $startAt = Carbon::now();
+                        $dueAt = (clone $startAt)->addHours($durationHours);
+
+                        $custName = 'Walk-in Client';
+                        $custPhone = '0000000000';
+                        if (!empty($validated['customer_id'])) {
+                            $cust = Customer::find($validated['customer_id']);
+                            if ($cust) {
+                                $custName = $cust->name;
+                                $custPhone = $cust->phone;
+                            }
+                        }
+
+                        $depositAmount = (float) ($item['deposit_amount'] ?? $rItem->security_deposit) * $item['quantity'];
+                        $rOrder = RentalOrder::create([
+                            'rental_number' => 'SV-RNT-' . date('Y') . '-' . strtoupper(substr(uniqid(), -6)),
+                            'customer_id' => $validated['customer_id'] ?? null,
+                            'customer_name' => $custName,
+                            'customer_phone' => $custPhone,
+                            'customer_nic' => $item['customer_nic'] ?? null,
+                            'rental_item_id' => $rItem->id,
+                            'quantity' => $item['quantity'],
+                            'rental_start_date' => $startAt,
+                            'duration_hours' => $durationHours,
+                            'due_return_date' => $dueAt,
+                            'rental_fee' => $itemLineTotal,
+                            'deposit_amount' => $depositAmount,
+                            'total_collected' => $itemLineTotal + $depositAmount,
+                            'payment_method' => $validated['payment_method'],
+                            'status' => 'active',
+                            'sale_id' => $sale->id,
+                            'created_by' => $user->id,
+                            'notes' => "POS Invoice #{$invoiceNumber} (24h Rental)",
+                        ]);
+
+                        $rItem->available_quantity = max(0, $rItem->available_quantity - $item['quantity']);
+                        if ($rItem->available_quantity <= 0) {
+                            $rItem->status = 'rented';
+                        }
+                        $rItem->save();
+                    }
                 }
             }
 

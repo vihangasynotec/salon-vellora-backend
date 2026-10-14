@@ -83,4 +83,9 @@ class Sale extends Model
     {
         return $this->belongsTo(Quotation::class);
     }
+
+    public function rentals()
+    {
+        return $this->hasMany(RentalOrder::class);
+    }
 }

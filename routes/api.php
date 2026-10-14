@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\POSController;
 use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\QuotationController;
+use App\Http\Controllers\Api\RentalController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SaleController;
@@ -139,6 +140,20 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/suppliers', [PurchaseController::class, 'getSuppliers'])->middleware('permission:purchases.view');
     Route::post('/suppliers', [PurchaseController::class, 'storeSupplier'])->middleware('permission:purchases.create');
+
+    // Bridal & Item Rentals
+    Route::prefix('rentals')->group(function () {
+        Route::get('/catalog', [RentalController::class, 'index'])->middleware('permission:inventory.view');
+        Route::post('/catalog', [RentalController::class, 'store'])->middleware('permission:inventory.create');
+        Route::get('/catalog/{id}', [RentalController::class, 'show'])->middleware('permission:inventory.view');
+        Route::put('/catalog/{id}', [RentalController::class, 'update'])->middleware('permission:inventory.create');
+        Route::delete('/catalog/{id}', [RentalController::class, 'destroy'])->middleware('permission:inventory.create');
+        
+        Route::get('/orders', [RentalController::class, 'getOrders'])->middleware('permission:pos.view');
+        Route::post('/orders', [RentalController::class, 'createOrder'])->middleware('permission:pos.create');
+        Route::post('/orders/{id}/return', [RentalController::class, 'returnOrder'])->middleware('permission:pos.create');
+        Route::get('/summary', [RentalController::class, 'getSummary'])->middleware('permission:dashboard.view');
+    });
 
     // Expenses
     Route::prefix('expenses')->group(function () {

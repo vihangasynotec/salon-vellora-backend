@@ -37,6 +37,10 @@ class CatalogController extends Controller
             ->where('status', 'active')
             ->get();
 
+        $rentals = \App\Models\RentalItem::where('status', 'available')
+            ->where('available_quantity', '>', 0)
+            ->get();
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -44,6 +48,7 @@ class CatalogController extends Controller
                 'categories' => $categories,
                 'featured_services' => $featuredServices,
                 'packages' => $packages,
+                'rentals' => $rentals,
             ]
         ]);
     }
