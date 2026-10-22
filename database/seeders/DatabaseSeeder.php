@@ -218,7 +218,10 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($users as $u) {
-            User::updateOrCreate(['email' => $u['email']], $u);
+            $userRecord = User::withTrashed()->updateOrCreate(['email' => $u['email']], $u);
+            if ($userRecord->trashed()) {
+                $userRecord->restore();
+            }
         }
 
         // 4. Staff Profiles

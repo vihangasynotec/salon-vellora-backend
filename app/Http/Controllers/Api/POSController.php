@@ -186,7 +186,7 @@ class POSController extends Controller
             foreach ($validated['items'] as $item) {
                 $itemLineTotal = ($item['unit_price'] * $item['quantity']) - ($item['discount_amount'] ?? 0);
 
-                SaleItem::create([
+                $saleItem = SaleItem::create([
                     'sale_id' => $sale->id,
                     'item_type' => $item['item_type'],
                     'item_id' => $item['item_id'],
@@ -256,6 +256,12 @@ class POSController extends Controller
                             'sale_id' => $sale->id,
                             'created_by' => $user->id,
                             'notes' => "POS Invoice #{$invoiceNumber} (24h Rental)",
+                        ]);
+
+                        $saleItem->update([
+                            'rental_order_id' => $rOrder->id,
+                            'rental_return_due' => $dueAt,
+                            'rental_deposit' => $depositAmount,
                         ]);
 
                         $rItem->available_quantity = max(0, $rItem->available_quantity - $item['quantity']);

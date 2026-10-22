@@ -190,4 +190,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // System Settings
     Route::get('/settings', [SettingController::class, 'index'])->middleware('permission:settings.view');
     Route::post('/settings', [SettingController::class, 'update'])->middleware('permission:settings.edit');
+    Route::post('/settings/clear-database', [SettingController::class, 'clearDatabase'])->middleware('permission:settings.edit');
 });
