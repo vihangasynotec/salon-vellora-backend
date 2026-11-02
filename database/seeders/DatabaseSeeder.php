@@ -524,5 +524,8 @@ class DatabaseSeeder extends Seeder
         foreach ($rentalItems as $ri) {
             RentalItem::updateOrCreate(['code' => $ri['code']], $ri);
         }
+
+        $this->call(BeautyProductsSeeder::class);
+        $this->call(SalonVelloraServicesSeeder::class);
     }
 }

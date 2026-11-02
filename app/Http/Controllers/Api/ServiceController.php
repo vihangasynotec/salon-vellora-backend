@@ -74,6 +74,13 @@ class ServiceController extends Controller
 
     public function update(Request $request, $id): JsonResponse
     {
+        if (!$request->user()->hasRole('super_admin', 'Super Admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Only Super Administrators can edit services or modify service pricing.'
+            ], 403);
+        }
+
         $service = Service::findOrFail($id);
 
         $validated = $request->validate([
@@ -101,16 +108,24 @@ class ServiceController extends Controller
         ]);
     }
 
-    public function destroy($id): JsonResponse
+    public function destroy(Request $request, $id): JsonResponse
     {
+        if (!$request->user()->hasRole('super_admin', 'Super Admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Only Super Administrators can delete services.'
+            ], 403);
+        }
+
         $service = Service::findOrFail($id);
+        $serviceName = $service->name;
         $service->delete();
 
-        AuditLogService::log('delete', 'services', $id, null, null);
+        AuditLogService::log('delete', 'services', $id, ['name' => $serviceName], null, $request->user()->name);
 
         return response()->json([
             'success' => true,
-            'message' => 'Service deleted successfully.',
+            'message' => "Service '{$serviceName}' deleted successfully.",
         ]);
     }
 
@@ -123,6 +138,13 @@ class ServiceController extends Controller
 
     public function storeCategory(Request $request): JsonResponse
     {
+        if (!$request->user()->hasRole('super_admin', 'Super Admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Only Super Administrators can add service categories.'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -133,6 +155,27 @@ class ServiceController extends Controller
         $category = ServiceCategory::create($validated);
 
         return response()->json(['success' => true, 'message' => 'Category created.', 'data' => $category], 201);
+    }
+
+    public function destroyCategory(Request $request, $id): JsonResponse
+    {
+        if (!$request->user()->hasRole('super_admin', 'Super Admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Only Super Administrators can delete service categories.'
+            ], 403);
+        }
+
+        $category = ServiceCategory::findOrFail($id);
+        $name = $category->name;
+        $category->delete();
+
+        AuditLogService::log('delete', 'service_categories', $id, ['name' => $name], null, $request->user()->name);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Service category '{$name}' deleted successfully.",
+        ]);
     }
 
     // Packages

@@ -93,10 +93,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Services & Packages
     Route::get('/services', [ServiceController::class, 'index'])->middleware('permission:services.view');
     Route::post('/services', [ServiceController::class, 'store'])->middleware('permission:services.create');
-    Route::put('/services/{id}', [ServiceController::class, 'update'])->middleware('permission:services.edit');
-    Route::delete('/services/{id}', [ServiceController::class, 'destroy'])->middleware('permission:services.delete');
+    Route::put('/services/{id}', [ServiceController::class, 'update']);
+    Route::delete('/services/{id}', [ServiceController::class, 'destroy']);
     Route::get('/service-categories', [ServiceController::class, 'getCategories'])->middleware('permission:services.view');
-    Route::post('/service-categories', [ServiceController::class, 'storeCategory'])->middleware('permission:services.create');
+    Route::post('/service-categories', [ServiceController::class, 'storeCategory']);
+    Route::delete('/service-categories/{id}', [ServiceController::class, 'destroyCategory']);
     Route::get('/service-packages', [ServiceController::class, 'getPackages'])->middleware('permission:services.view');
     Route::post('/service-packages', [ServiceController::class, 'storePackage'])->middleware('permission:services.create');
 
@@ -126,7 +127,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('inventory')->group(function () {
         Route::get('/products', [InventoryController::class, 'index'])->middleware('permission:inventory.view');
         Route::post('/products', [InventoryController::class, 'storeProduct'])->middleware('permission:inventory.create');
-        Route::put('/products/{id}', [InventoryController::class, 'updateProduct'])->middleware('permission:inventory.create');
+        Route::put('/products/{id}', [InventoryController::class, 'updateProduct']);
+        Route::delete('/products/{id}', [InventoryController::class, 'destroyProduct']);
+        Route::get('/categories', [InventoryController::class, 'getCategories'])->middleware('permission:inventory.view');
+        Route::get('/brands', [InventoryController::class, 'getBrands'])->middleware('permission:inventory.view');
         Route::post('/adjust', [InventoryController::class, 'adjustStock'])->middleware('permission:inventory.adjust');
         Route::get('/movements', [InventoryController::class, 'movements'])->middleware('permission:inventory.view');
         Route::get('/low-stock', [InventoryController::class, 'lowStock'])->middleware('permission:inventory.view');

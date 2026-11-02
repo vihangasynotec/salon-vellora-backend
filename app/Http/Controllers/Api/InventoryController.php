@@ -100,6 +100,13 @@ class InventoryController extends Controller
 
     public function updateProduct(Request $request, $id): JsonResponse
     {
+        if (!$request->user()->hasRole('super_admin', 'Super Admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Only Super Administrators can edit products and modify prices.'
+            ], 403);
+        }
+
         $product = Product::findOrFail($id);
 
         $validated = $request->validate([
@@ -110,6 +117,7 @@ class InventoryController extends Controller
             'barcode' => "nullable|string|max:100|unique:products,barcode,{$id}",
             'cost_price' => 'required|numeric|min:0',
             'retail_price' => 'required|numeric|min:0',
+            'stock_quantity' => 'nullable|integer|min:0',
             'alert_quantity' => 'nullable|integer|min:0',
             'unit' => 'nullable|string|max:20',
             'status' => 'nullable|in:active,inactive',
@@ -124,6 +132,52 @@ class InventoryController extends Controller
             'success' => true,
             'message' => 'Product updated successfully.',
             'data' => $product->load(['category', 'brand']),
+        ]);
+    }
+
+    public function destroyProduct(Request $request, $id): JsonResponse
+    {
+        if (!$request->user()->hasRole('super_admin', 'Super Admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Only Super Administrators can delete products.'
+            ], 403);
+        }
+
+        $product = Product::findOrFail($id);
+        $productName = $product->name;
+        $productData = $product->toArray();
+
+        $product->delete();
+
+        AuditLogService::log(
+            'delete',
+            'inventory',
+            $id,
+            $productData,
+            null,
+            $request->user()->name
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Product '{$productName}' deleted successfully."
+        ]);
+    }
+
+    public function getCategories(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => ProductCategory::orderBy('name')->get()
+        ]);
+    }
+
+    public function getBrands(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => Brand::orderBy('name')->get()
         ]);
     }
 
