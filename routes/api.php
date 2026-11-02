@@ -196,3 +196,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/settings', [SettingController::class, 'update'])->middleware('permission:settings.edit');
     Route::post('/settings/clear-database', [SettingController::class, 'clearDatabase'])->middleware('permission:settings.edit');
 });
+
+// Explicit preflight CORS support
+Route::options('{any}', function () {
+    return response('', 200)
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH')
+        ->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Requested-With, X-CSRF-TOKEN');
+})->where('any', '.*');
