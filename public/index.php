@@ -1,17 +1,20 @@
 <?php
 
 // Immediate CORS header dispatch for all requests
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowedOrigins = [
     'https://salonvellora.com.lk',
     'http://salonvellora.com.lk',
     'https://api.salonvellora.com.lk',
     'http://api.salonvellora.com.lk',
     'http://localhost:3000',
-    'http://127.0.0.1:3000'
+    'http://127.0.0.1:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
 ];
 
-$allowOrigin = in_array($origin, $allowedOrigins) ? $origin : '*';
+// Use exact origin if allowed, otherwise use the main domain
+$allowOrigin = in_array($origin, $allowedOrigins) ? $origin : 'https://salonvellora.com.lk';
 
 header("Access-Control-Allow-Origin: $allowOrigin");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH");

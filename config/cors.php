@@ -24,17 +24,20 @@ return [
         'http://salonvellora.com.lk',
         'https://api.salonvellora.com.lk',
         'http://api.salonvellora.com.lk',
-        '*'
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
     ],
 
-    'allowed_origins_patterns' => ['*salonvellora.com.lk*'],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => ['*'],
+    'exposed_headers' => [],
 
     'max_age' => 86400,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];
