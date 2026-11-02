@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['https://salonvellora.com.lk', 'http://salonvellora.com.lk', '*'],
 
     'allowed_origins_patterns' => [],
 
