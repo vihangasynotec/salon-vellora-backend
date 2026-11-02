@@ -19,15 +19,21 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://salonvellora.com.lk', 'http://salonvellora.com.lk', '*'],
+    'allowed_origins' => [
+        'https://salonvellora.com.lk',
+        'http://salonvellora.com.lk',
+        'https://api.salonvellora.com.lk',
+        'http://api.salonvellora.com.lk',
+        '*'
+    ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => ['*salonvellora.com.lk*'],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['*'],
 
-    'max_age' => 0,
+    'max_age' => 86400,
 
     'supports_credentials' => false,
 
